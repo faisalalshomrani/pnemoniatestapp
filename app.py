@@ -2,6 +2,8 @@ import streamlit as st
 import onnxruntime as ort
 import numpy as np
 from PIL import Image
+import os
+import requests
 
 st.set_page_config(
     page_title="Pneumonia Detection System",
@@ -13,10 +15,14 @@ THRESHOLD = 0.055
 
 @st.cache_resource
 def load_model():
-    return ort.InferenceSession(
-        "CXR_abnormal_detector_fixed.onnx",
-        providers=["CPUExecutionProvider"]
-    )
+    url = "https://drive.google.com/uc?id=1vKWHJDIowktLLFc4zZiB75WcrXVhlggC"
+    model_path = "model.onnx"
+
+    if not os.path.exists(model_path):
+        with open(model_path, "wb") as f:
+            f.write(requests.get(url).content)
+
+    return ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
 
 session = load_model()
 input_name = session.get_inputs()[0].name
